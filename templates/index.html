@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Warehouse Bot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #1b1b1b;
+            color: #ccc;
+        }
+
+        h2, h3 {
+            text-align: center;
+            color: #fff;
+        }
+
+        .warehouse-notice {
+            background-color: #333;
+            color: #ff5f5f;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #ff5f5f;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .visualizer-container {
+            width: 100%;
+            max-width: 800px;
+            height: 200px;
+            background-color: #222;
+            margin: 20px auto;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .visualizer-column {
+            display: flex;
+            flex-direction: column-reverse;
+            justify-content: flex-start;
+            height: 100%;
+            width: 40px;
+            margin: 0 5px;
+            gap: 3px;
+        }
+
+        .block {
+            width: 100%;
+            height: 15px;
+            opacity: 0;
+            border-radius: 5px;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+        }
+
+        .chat-bot-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            cursor: pointer;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .chat-bot-button:hover {
+            background-color: #0056b3;
+        }
+
+        .chat-box {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            max-height: 70vh;
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.3);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 999;
+        }
+
+        .chat-header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+
+        .message.bot {
+            background-color: #444;
+            align-self: flex-start;
+        }
+
+        .message.user {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .chat-options {
+            display: flex;
+            flex-direction: column;
+            margin: 10px 0;
+        }
+
+        .chat-options button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .chat-options button:hover {
+            background-color: #0056b3;
+        }
+
+        .chat-input {
+            display: none;
+            padding: 10px;
+            background-color: #fff;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .chat-input input[type="file"], .chat-input button {
+            width: 90%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .chat-input button {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            width: 90%;
+        }
+
+        .chat-input button:hover {
+            background-color: #0056b3;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #007bff;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #0056b3;
+        }
+
+        @keyframes typingAnimation {
+            0% { content: "."; }
+            50% { content: ".."; }
+            100% { content: "..."; }
+        }
+
+        .typing-indicator {
+            background-color: #e2e2e2;
+            border-radius: 8px;
+            padding: 10px;
+            display: inline-block;
+            max-width: 80%;
+            min-height: 30px;
+        }
+
+        .typing-indicator::after {
+            content: "...";
+            animation: typingAnimation 2s steps(3) infinite;
+        }
+
+        @media (max-width: 480px) {
+            .chat-box {
+                width: 90%;
+                right: 5%;
+                left: 5%;
+                bottom: 90px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="warehouse-notice">
+    Sorry! Our cybersecurity warehouse is currently experiencing some technical difficulties. Feel free to ask our AI bot for assistance!
+    </div>
+
+    <div class="visualizer-container" id="visualizer-container"></div>
+
+    <button class="chat-bot-button" onclick="toggleChat()">🤖
+    </button>
+
+    <div class="chat-box" id="chatBox">
+        <div class="chat-header">
+            Cybersecurity Warehouse Support Bot
+            <span class="close-chat" onclick="toggleChat()">✖️</span>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">Hi there! How can I assist you today?</div>
+            <div class="chat-options" id="initialOptions">
+                <button onclick="selectOption(' Warehouse Tour Information')">Warehouse Tour Information</button>
+                <button onclick="selectOption('Ordering Issues')">Ordering Issues</button>
+                <button onclick="selectOption('Product Details')">Product Details</button>
+                <button onclick="selectOption('Other')">Other</button>
+            </div>
+        </div>
+        <div class="chat-input" id="audioUpload">
+            <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="sendAudioFile(event)">
+                <input type="file" name="file" accept=".wav" id="audioFile" required>
+                <button type="submit">Upload .wav File</button>
+            </form>
+        </div>
+    </div>
+
+    <audio id="greetingAudio" src="/static/greeting.wav" preload="auto"></audio>
+
+    <script>
+    const visualizerContainer = document.getElementById('visualizer-container');
+    const audioElement = document.getElementById('greetingAudio');
+    const columnCount = 12;
+    const rowsPerColumn = 10;
+
+    const colors = [
+        '#ff0000',
+        '#00ff00',
+        '#0000ff',
+        '#ffff00',
+    ];
+
+    function createBlockColumns() {
+        for (let i = 0; i < columnCount; i++) {
+            const column = document.createElement('div');
+            column.classList.add('visualizer-column');
+            
+            for (let j = 0; j < rowsPerColumn; j++) {
+                const block = document.createElement('div');
+                block.classList.add('block');
+                block.style.backgroundColor = colors[Math.floor(j / (rowsPerColumn / colors.length))];
+                column.appendChild(block);
+            }
+            
+            visualizerContainer.appendChild(column);
+        }
+    }
+
+    function randomizeBlockHeight(analyser, frequencyData) {
+        const columns = document.querySelectorAll('.visualizer-column');
+        analyser.getByteFrequencyData(frequencyData);
+    
+        columns.forEach((column, index) => {
+            const blocks = column.querySelectorAll('.block');
+            const intensity = Math.floor(frequencyData[index] / 256 * rowsPerColumn);
+    
+            blocks.forEach((block, blockIndex) => {
+                if (blockIndex <= intensity) {
+                    block.style.opacity = 1; 
+                } else {
+                    block.style.opacity = 0;
+                }
+            });
+        });
+    }
+
+    function setupAudioVisualizer() {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioContext.createAnalyser();
+        const source = audioContext.createMediaElementSource(audioElement);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        analyser.fftSize = 64;
+
+        const frequencyData = new Uint8Array(analyser.frequencyBinCount);
+        createBlockColumns();
+
+        function renderFrame() {
+            randomizeBlockHeight(analyser, frequencyData);
+            requestAnimationFrame(renderFrame);
+        }
+
+        renderFrame();
+    }
+
+    audioElement.addEventListener('play', function() {
+        setupAudioVisualizer();
+    });
+
+    function toggleChat() {
+        const chatBox = document.getElementById('chatBox');
+        const audioElement = document.getElementById('greetingAudio');
+
+        if (chatBox.style.display === 'flex') {
+            chatBox.style.display = 'none';
+            resetChat();
+        } else {
+            chatBox.style.display = 'flex';
+            audioElement.play();
+        }
+    }
+
+    function resetChat() {
+        const chatMessages = document.getElementById('chatMessages');
+        const audioUpload = document.getElementById('audioUpload');
+        chatMessages.innerHTML = `
+            <div class="message bot">Hi there! How can I assist you today?</div>
+            <div class="chat-options" id="initialOptions">
+
+                <button onclick="selectOption('Warehouse Tour Information')">Warehouse Tour Information</button>
+                <button onclick="selectOption('Product Details')">Product Details</button>
+                <button onclick="selectOption('Ordering Issues')">Ordering Issues</button>
+                <button onclick="selectOption('Other')">Other</button>
+            </div>
+        `;
+        audioUpload.style.display = 'none';
+    }
+
+    function selectOption(option) {
+        const chatMessages = document.getElementById('chatMessages');
+        const initialOptions = document.getElementById('initialOptions');
+        const audioUpload = document.getElementById('audioUpload');
+        const userMessage = document.createElement('div');
+        userMessage.className = 'message user';
+        userMessage.textContent = option;
+        chatMessages.appendChild(userMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        let botMessageText;
+        if (option === 'Ordering Issues' || option === 'Product Details') {
+            botMessageText = "Are you experiencing trouble with placing or tracking an order? You can upload an audio file to explain further.";
+            audioUpload.style.display = 'flex';  
+            audioUpload.style.position = 'sticky';
+            audioUpload.style.bottom = '0';
+        } else if (option === 'Warehouse Tour Information') {
+            botMessageText = "Our cybersecurity warehouse tours showcase advanced security systems. Please check our website for scheduling.";
+            audioUpload.style.display = 'none';
+        } else if (option === 'Other') {
+            botMessageText = "Sorry, we can't help with that right now. We are experiencing technical difficulties.";
+            audioUpload.style.display = 'none';
+        }
+        const botMessage = document.createElement('div');
+        botMessage.className = 'message bot';
+        botMessage.textContent = botMessageText;
+        chatMessages.appendChild(botMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        initialOptions.style.display = 'none';
+    }
+
+    function sendAudioFile(event) {
+    event.preventDefault();
+    const audioFile = document.getElementById('audioFile').files[0];
+    if (audioFile) {
+        const formData = new FormData();
+        formData.append('file', audioFile);
+        const chatMessages = document.getElementById('chatMessages');
+        const userMessage = document.createElement('div');
+        userMessage.className = 'message user';
+        userMessage.textContent = "Audio file uploaded!";
+        chatMessages.appendChild(userMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'message bot typing-indicator';
+        typingIndicator.textContent = "Bot is typing";
+        chatMessages.appendChild(typingIndicator);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            chatMessages.removeChild(typingIndicator);
+            
+            // Clear the file input field after successful upload
+            document.getElementById('audioFile').value = "";
+
+            if (data.decoded_text) {
+                const decodedMessage = document.createElement('div');
+                decodedMessage.className = 'message bot';
+                decodedMessage.style.color = 'red';
+                decodedMessage.textContent = "Decoded Text: " + data.decoded_text;
+                chatMessages.appendChild(decodedMessage);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            const botMessage = document.createElement('div');
+            botMessage.className = 'message bot';
+            botMessage.textContent = data.ai_response || "Sorry, I couldn't decode that. Try again.";
+            chatMessages.appendChild(botMessage);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        })
+        .catch(error => {
+            chatMessages.removeChild(typingIndicator);
+            const botMessage = document.createElement('div');
+            botMessage.className = 'message bot';
+            botMessage.textContent = "Oops, something went wrong. Please try again.";
+            chatMessages.appendChild(botMessage);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Clear the file input field if there's an error
+            document.getElementById('audioFile').value = "";
+        });
+    }
+}
+    </script>
+</body>
+</html>

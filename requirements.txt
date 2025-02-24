@@ -1,0 +1,8 @@
+# Flask[async]
+# ollama
+# aiohttp
+# Flask-Session
+# requests
+
+Flask==2.3.2
+numpy==1.23.
