@@ -18,7 +18,7 @@ FREQUENCY_TOLERANCE = 20
 PLAYBACK_SPEED = 0.1
 SILENCE_DURATION = 0.1
 
-***REMOVED*** = "Good Job! This was a nice chat Human, you earned the 🚩 HnH{r0bo7s_ch4t_in_b1n4ry}"
+FLAG_RESPONSE = "Good Job! This was a nice chat Human, you earned the 🚩 CTF{7h!s_i5_4_fak3_fl4g}"
 FLAG_CONFIRMATION_QUESTION = "Are you asking about the flag?"
 DEFAULT_RESPONSES = [
     "Sorry, I didn't catch that.",
@@ -111,7 +111,7 @@ def upload_file():
                 session.clear()  # Clear session after success
                 return jsonify({
                     "decoded_text": decoded_text,
-                    "ai_response": ***REMOVED***,
+                    "ai_response": FLAG_RESPONSE,
                     "style": "red"
                 })
             else:
